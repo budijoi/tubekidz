@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TubeKidz - Video Aman untuk Anak</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-row">
+        <div class="logo" id="logoLink">&#9733; TubeKidz</div>
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Cari video anak-anak..." autocomplete="off">
+          <button id="searchBtn">Cari</button>
+        </div>
+      </div>
+      <nav class="nav-bar" id="mainNav">
+        <span class="nav-link active" data-view="home">Beranda</span>
+        <span class="nav-link" data-view="categories">Kategori</span>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="protocolBanner" class="protocol-banner" style="display:none;"></div>
+  </div>
+  <main class="container">
+    <div id="viewContent"></div>
+  </main>
+
+  <div class="modal-overlay" id="watchModal">
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <h2 id="modalTitle" class="modal-title"></h2>
+      <div class="video-wrapper" id="videoWrapper"></div>
+      <div id="fallbackMsg" class="fallback-msg" style="display:none;">
+        <p>Video tidak dapat diputar di sini.</p>
+        <a id="ytLink" href="#" target="_blank" rel="noopener" class="btn-yt">&#9654; Tonton di YouTube</a>
+      </div>
+      <div class="video-details" id="videoDetails">
+        <div class="vd-uploader" id="vdUploader"></div>
+        <div class="vd-desc" id="vdDesc"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>TubeKidz &mdash; Tayangan aman untuk buah hati tercinta</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
