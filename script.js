@@ -65,7 +65,19 @@ var VIDEOS = [
   { id: "e4J03H0vepk", title: "Mud Test JCB & Traktor", channel: "Pramod`s Life", cat: "petualangan" },
   { id: "DZk2S-Y4rOI", title: "JCB & TATA Tipper Heavy Load", channel: "Pramod`s Life", cat: "petualangan" },
   { id: "0JVB3MZq9bg", title: "JCB Excavator Buat Sumur", channel: "Pramod`s Life", cat: "petualangan" },
-  { id: "jGH2flI1Xqg", title: "JCB Excavator Bikin Kolam Ikan", channel: "Pramod`s Life", cat: "petualangan" }
+  { id: "jGH2flI1Xqg", title: "JCB Excavator Bikin Kolam Ikan", channel: "Pramod`s Life", cat: "petualangan" },
+  { id: "oKyViklTKHM", title: "Sonic Bukan Monster", channel: "Anglikosik Indonesia", cat: "petualangan" },
+  { id: "7enRlkNAJ1k", title: "Bombardino Crocodilo", channel: "Anglikosik Indonesia", cat: "petualangan" },
+  { id: "l9YenYrISiM", title: "Stitch di Dunia Nyata", channel: "Anglikosik Indonesia", cat: "petualangan" },
+  { id: "vE6c0YG6iXI", title: "Monster Italian Brainrot", channel: "Anglikosik Indonesia", cat: "petualangan" },
+  { id: "VDevBKiZ3u4", title: "Burung Cendet Penjagal Kejam", channel: "Animal Scripts", cat: "edukasi" },
+  { id: "RPaf1oWv4Rw", title: "Hutan Mangrove", channel: "Animal Scripts", cat: "edukasi" },
+  { id: "JwEn2Q3hgfs", title: "Honey Badger Preman Sabana", channel: "Animal Scripts", cat: "edukasi" },
+  { id: "kd8iGvkMSFg", title: "Burung Kedasih Perampok", channel: "Animal Scripts", cat: "edukasi" },
+  { id: "ZU6qShtfguA", title: "Bangun Penjara Dari Miskin ke Kaya", channel: "Dunia Budi Roblox", cat: "gaming" },
+  { id: "C5igwlK3drE", title: "Jaga Rumah Sakit Hewan Jam 3 Pagi", channel: "Dunia Budi Roblox", cat: "gaming" },
+  { id: "6PqVWxdbFas", title: "Liburan Naik Pesawat Jatuh Meledak", channel: "Dunia Budi Roblox", cat: "gaming" },
+  { id: "aLCI15vaNRo", title: "Sembunyi dari Pocong Ketuk Pintu", channel: "Dunia Budi Roblox", cat: "gaming" }
 ];
 
 var CATEGORIES = { semua: "all", edukasi: "edukasi", lagu: "lagu", kartun: "kartun", petualangan: "petualangan", gaming: "gaming" };
@@ -87,7 +99,10 @@ var CHANNEL_FEEDS = {
   "Kok Bisa?": { id: "UCu0yQD7NFMyLu_-TmKa4Hqg", cat: "edukasi" },
   "NussaOfficial": { id: "UCV2jNjJEtO0Hr3b1Es3xPJg", cat: "kartun" },
   "Blippi Indonesia": { id: "UCIOO268dRFA8Gae-ksXrpvw", cat: "edukasi" },
-  "Pramod`s Life": { id: "UC1V1PQT_ZVRjzuzioG05rrQ", cat: "petualangan" }
+  "Pramod`s Life": { id: "UC1V1PQT_ZVRjzuzioG05rrQ", cat: "petualangan" },
+  "Anglikosik Indonesia": { id: "UCiK7L708JFZylemhApNkRcA", cat: "petualangan" },
+  "Animal Scripts": { id: "UC5wFTgdXgbecQOm97_S6yfA", cat: "edukasi" },
+  "Dunia Budi Roblox": { id: "UCJ9v-fDARn2Vyl1TX9PfVyA", cat: "gaming" }
 };
 
 var RSS_URL = "https://api.rss2json.com/v1/api.json?rss_url=";
