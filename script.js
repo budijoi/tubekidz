@@ -61,7 +61,11 @@ var VIDEOS = [
   { id: "azog8Z2jJ3I", title: "Berkreasi bersama Blippi!", channel: "Blippi Indonesia", cat: "edukasi" },
   { id: "udauRXpT7NM", title: "Sebuah Suguhan yang Lezat", channel: "Blippi Indonesia", cat: "edukasi" },
   { id: "N5WwLsYuKl0", title: "Membuat Gelembung", channel: "Blippi Indonesia", cat: "edukasi" },
-  { id: "akKxZyA0qmk", title: "Memanggang Makaroni yang Lezat", channel: "Blippi Indonesia", cat: "edukasi" }
+  { id: "akKxZyA0qmk", title: "Memanggang Makaroni yang Lezat", channel: "Blippi Indonesia", cat: "edukasi" },
+  { id: "e4J03H0vepk", title: "Mud Test JCB & Traktor", channel: "Pramod`s Life", cat: "petualangan" },
+  { id: "DZk2S-Y4rOI", title: "JCB & TATA Tipper Heavy Load", channel: "Pramod`s Life", cat: "petualangan" },
+  { id: "0JVB3MZq9bg", title: "JCB Excavator Buat Sumur", channel: "Pramod`s Life", cat: "petualangan" },
+  { id: "jGH2flI1Xqg", title: "JCB Excavator Bikin Kolam Ikan", channel: "Pramod`s Life", cat: "petualangan" }
 ];
 
 var CATEGORIES = { semua: "all", edukasi: "edukasi", lagu: "lagu", kartun: "kartun", petualangan: "petualangan", gaming: "gaming" };
@@ -82,7 +86,8 @@ var CHANNEL_FEEDS = {
   "BaLiTa - Baba Lili Tata": { id: "UC5Tg_aUYKBtpnGipTVqDDuQ", cat: "edukasi" },
   "Kok Bisa?": { id: "UCu0yQD7NFMyLu_-TmKa4Hqg", cat: "edukasi" },
   "NussaOfficial": { id: "UCV2jNjJEtO0Hr3b1Es3xPJg", cat: "kartun" },
-  "Blippi Indonesia": { id: "UCIOO268dRFA8Gae-ksXrpvw", cat: "edukasi" }
+  "Blippi Indonesia": { id: "UCIOO268dRFA8Gae-ksXrpvw", cat: "edukasi" },
+  "Pramod`s Life": { id: "UC1V1PQT_ZVRjzuzioG05rrQ", cat: "petualangan" }
 };
 
 var RSS_URL = "https://api.rss2json.com/v1/api.json?rss_url=";
