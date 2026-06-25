@@ -91,7 +91,7 @@ var CHANNEL_FEEDS = {
 };
 
 var RSS_URL = "https://api.rss2json.com/v1/api.json?rss_url=";
-var MAX_RSS = 5;
+var MAX_RSS = 15;
 var dynamicVideos = [];
 var dynamicLoaded = false;
 
@@ -203,8 +203,6 @@ function isDup(id) {
 }
 
 function loadDynamicVideos() {
-  if (dynamicLoaded) return;
-  dynamicLoaded = true;
   var names = Object.keys(CHANNEL_FEEDS);
   var pending = names.length;
 
@@ -224,15 +222,21 @@ function loadDynamicVideos() {
       }
     }).catch(function() {}).then(function() {
       pending--;
-      if (pending === 0) { render(); }
+      if (pending === 0) { if (dynamicLoaded) render(); else { dynamicLoaded = true; render(); } }
     });
   });
+}
+
+function refreshDynamicVideos() {
+  dynamicVideos = [];
+  dynamicLoaded = false;
+  loadDynamicVideos();
 }
 
 // ================= RENDER =================
 
 function render() {
-  if (!IS_FILE) loadDynamicVideos();
+  if (!IS_FILE && !dynamicLoaded) { loadDynamicVideos(); }
   if (state.view === "home") renderHome();
   else if (state.view === "categories") renderCategories();
   else if (state.view === "channel") renderChannel(state.channelName);
@@ -474,3 +478,4 @@ if (IS_FILE) {
   }
 }
 goHome();
+setInterval(refreshDynamicVideos, 1800000);
