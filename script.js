@@ -109,6 +109,8 @@ var RSS_URL = "https://api.rss2json.com/v1/api.json?rss_url=";
 var MAX_RSS = 15;
 var dynamicVideos = [];
 var dynamicLoaded = false;
+var REFRESH_INTERVAL = 3600000;
+var lastRefreshTime = Date.now();
 
 var IS_FILE = window.location.protocol === "file:";
 
@@ -224,14 +226,14 @@ function loadDynamicVideos() {
   names.forEach(function(chName) {
     var info = CHANNEL_FEEDS[chName];
     var rss = "https://www.youtube.com/feeds/videos.xml?channel_id=" + info.id;
-    var url = RSS_URL + encodeURIComponent(rss);
+    var url = RSS_URL + encodeURIComponent(rss) + "&_=" + Date.now();
 
     fetch(url).then(function(r) { return r.json(); }).then(function(data) {
       if (data && data.items) {
         data.items.forEach(function(item) {
           var m = item.link.match(/v=([a-zA-Z0-9_-]{11})/);
           if (m && !isDup(m[1])) {
-            dynamicVideos.push({ id: m[1], title: item.title.substring(0, 60), channel: chName, cat: info.cat });
+            dynamicVideos.push({ id: m[1], title: item.title.substring(0, 60), channel: chName, cat: info.cat, pubDate: item.pubDate });
           }
         });
       }
@@ -245,6 +247,8 @@ function loadDynamicVideos() {
 function refreshDynamicVideos() {
   dynamicVideos = [];
   dynamicLoaded = false;
+  lastRefreshTime = Date.now();
+  document.getElementById("countdownDisplay").classList.remove("loading");
   loadDynamicVideos();
 }
 
@@ -265,6 +269,12 @@ function renderHome() {
   for (var c = 0; c < cats.length; c++) {
     var items = getSafeVideos(cats[c], "");
     if (items.length === 0) continue;
+    items.sort(function(a, b) {
+      if (a.pubDate && b.pubDate) return new Date(b.pubDate) - new Date(a.pubDate);
+      if (a.pubDate) return -1;
+      if (b.pubDate) return 1;
+      return 0;
+    });
     html += '<div class="section">';
     html += '<h2 class="section-title"><span class="sec-cat-tag ' + catClass(cats[c]) + '">' + catLabel(cats[c]) + '</span></h2>';
     html += '<div class="video-grid">';
@@ -346,7 +356,21 @@ function renderSearch(query) {
   el.view.innerHTML = html;
 }
 
+function timeAgo(dateStr) {
+  if (!dateStr) return "";
+  var diff = Date.now() - new Date(dateStr).getTime();
+  var mins = Math.floor(diff / 60000);
+  if (mins < 1) return "baru";
+  if (mins < 60) return mins + "m lalu";
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + "j lalu";
+  var days = Math.floor(hrs / 24);
+  if (days < 30) return days + "h lalu";
+  return Math.floor(days / 30) + "bl lalu";
+}
+
 function cardHtml(v) {
+  var timeHtml = v.pubDate ? '<span class="video-time">' + timeAgo(v.pubDate) + '</span>' : '';
   return '<div class="video-card" data-id="' + v.id + '" data-title="' + esc(v.title) + '" data-channel="' + esc(v.channel) + '" data-cat="' + v.cat + '">' +
     '<div class="thumb-wrap">' +
     '<img src="' + thumb(v.id) + '" alt="' + esc(v.title) + '" loading="lazy">' +
@@ -355,6 +379,7 @@ function cardHtml(v) {
     '<h3>' + esc(v.title) + '</h3>' +
     '<div class="video-meta">' +
     '<span class="channel-link">' + esc(v.channel) + '</span>' +
+    timeHtml +
     '</div></div></div>';
 }
 
@@ -480,6 +505,11 @@ el.logo.addEventListener("click", goHome);
 el.close.addEventListener("click", closePlayer);
 document.addEventListener("keydown", function(e) { if (e.key === "Escape") closePlayer(); });
 
+document.getElementById("refreshBtn").addEventListener("click", function() {
+  document.getElementById("countdownDisplay").classList.add("loading");
+  refreshDynamicVideos();
+});
+
 // ================= INIT =================
 if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js"); }
 
@@ -493,4 +523,14 @@ if (IS_FILE) {
   }
 }
 goHome();
-setInterval(refreshDynamicVideos, 1800000);
+
+setInterval(refreshDynamicVideos, REFRESH_INTERVAL);
+
+setInterval(function() {
+  var display = document.getElementById("countdownDisplay");
+  if (!display) return;
+  var rem = Math.max(0, REFRESH_INTERVAL - (Date.now() - lastRefreshTime));
+  var m = Math.floor(rem / 60000);
+  var s = Math.floor((rem % 60000) / 1000);
+  display.textContent = "⏱ " + m + ":" + (s < 10 ? "0" : "") + s;
+}, 1000);
