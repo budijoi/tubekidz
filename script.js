@@ -109,11 +109,58 @@ var CHANNEL_FEEDS = {
 };
 
 var RSS_URL = "https://api.rss2json.com/v1/api.json?rss_url=";
-var MAX_RSS = 15;
+var MAX_RSS = 10;
+var MAX_PER_CHANNEL = 50;
 var dynamicVideos = [];
 var dynamicLoaded = false;
 var REFRESH_INTERVAL = 3600000;
 var lastRefreshTime = Date.now();
+
+function cacheKey(name) { return "dildultube_" + name.replace(/[^a-zA-Z0-9]/g, "_"); }
+
+function loadCache() {
+  dynamicVideos = [];
+  var names = Object.keys(CHANNEL_FEEDS);
+  for (var i = 0; i < names.length; i++) {
+    var key = cacheKey(names[i]);
+    var raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        var arr = JSON.parse(raw);
+        for (var j = 0; j < arr.length; j++) {
+          arr[j].channel = names[i];
+          arr[j].cat = CHANNEL_FEEDS[names[i]].cat;
+          if (!dynamicVideos.some(function(v) { return v.id === arr[j].id; })) {
+            dynamicVideos.push(arr[j]);
+          }
+        }
+      } catch(e) {}
+    }
+  }
+  dynamicVideos.sort(function(a, b) {
+    return new Date(b.pubDate) - new Date(a.pubDate);
+  });
+  dynamicLoaded = true;
+}
+
+function saveCache() {
+  var grouped = {};
+  for (var i = 0; i < dynamicVideos.length; i++) {
+    var v = dynamicVideos[i];
+    if (!grouped[v.channel]) grouped[v.channel] = [];
+    grouped[v.channel].push(v);
+  }
+  var names = Object.keys(grouped);
+  for (var j = 0; j < names.length; j++) {
+    grouped[names[j]].sort(function(a, b) {
+      return new Date(b.pubDate) - new Date(a.pubDate);
+    });
+    if (grouped[names[j]].length > MAX_PER_CHANNEL) {
+      grouped[names[j]] = grouped[names[j]].slice(0, MAX_PER_CHANNEL);
+    }
+    localStorage.setItem(cacheKey(names[j]), JSON.stringify(grouped[names[j]]));
+  }
+}
 
 var IS_FILE = window.location.protocol === "file:";
 
@@ -178,6 +225,11 @@ function getSafeVideos(cat, query) {
     var matchSearch = !q || v.title.toLowerCase().indexOf(q) !== -1 || v.channel.toLowerCase().indexOf(q) !== -1;
     if (matchCat && matchSearch) out.push(v);
   }
+  out.sort(function(a, b) {
+    var da = a.pubDate ? new Date(a.pubDate) : new Date(0);
+    var db = b.pubDate ? new Date(b.pubDate) : new Date(0);
+    return db - da;
+  });
   return out;
 }
 
@@ -216,15 +268,35 @@ function fetchMeta(videoId, cb) {
 
 // ================= DYNAMIC RSS =================
 
-function isDup(id) {
+function isDupInStatic(id) {
   for (var i = 0; i < VIDEOS.length; i++) { if (VIDEOS[i].id === id) return true; }
-  for (var i = 0; i < dynamicVideos.length; i++) { if (dynamicVideos[i].id === id) return true; }
   return false;
+}
+
+function mergeChannelVideos(chName, newVids) {
+  var existing = [];
+  for (var i = 0; i < dynamicVideos.length; i++) {
+    if (dynamicVideos[i].channel === chName) existing.push(dynamicVideos[i]);
+  }
+  var merged = existing.concat(newVids);
+  var seen = {};
+  var unique = [];
+  for (var i = 0; i < merged.length; i++) {
+    if (!seen[merged[i].id]) {
+      seen[merged[i].id] = true;
+      unique.push(merged[i]);
+    }
+  }
+  unique.sort(function(a, b) {
+    return new Date(b.pubDate) - new Date(a.pubDate);
+  });
+  return unique.slice(0, MAX_PER_CHANNEL);
 }
 
 function loadDynamicVideos() {
   var names = Object.keys(CHANNEL_FEEDS);
   var pending = names.length;
+  var allNewVids = [];
 
   names.forEach(function(chName) {
     var info = CHANNEL_FEEDS[chName];
@@ -233,32 +305,64 @@ function loadDynamicVideos() {
 
     fetch(url).then(function(r) { return r.json(); }).then(function(data) {
       if (data && data.items) {
+        var channelNew = [];
         data.items.forEach(function(item) {
           var m = item.link.match(/v=([a-zA-Z0-9_-]{11})/);
-          if (m && !isDup(m[1])) {
-            dynamicVideos.push({ id: m[1], title: item.title.substring(0, 60), channel: chName, cat: info.cat, pubDate: item.pubDate });
+          if (m && !isDupInStatic(m[1])) {
+            channelNew.push({ id: m[1], title: item.title.substring(0, 60), channel: chName, cat: info.cat, pubDate: item.pubDate });
           }
         });
+        channelNew.sort(function(a, b) {
+          return new Date(b.pubDate) - new Date(a.pubDate);
+        });
+        var top10 = channelNew.slice(0, MAX_RSS);
+        allNewVids = allNewVids.concat(top10);
       }
     }).catch(function() {}).then(function() {
       pending--;
-      if (pending === 0) { if (dynamicLoaded) render(); else { dynamicLoaded = true; render(); } }
+      if (pending === 0) {
+        var names2 = Object.keys(CHANNEL_FEEDS);
+        for (var i = 0; i < names2.length; i++) {
+          var chNewVids = [];
+          for (var j = 0; j < allNewVids.length; j++) {
+            if (allNewVids[j].channel === names2[i]) chNewVids.push(allNewVids[j]);
+          }
+          var merged = mergeChannelVideos(names2[i], chNewVids);
+          for (var k = 0; k < dynamicVideos.length; k++) {
+            if (dynamicVideos[k].channel === names2[i]) {
+              dynamicVideos[k] = null;
+            }
+          }
+          dynamicVideos = dynamicVideos.filter(function(v) { return v !== null; });
+          for (var k = 0; k < merged.length; k++) {
+            dynamicVideos.push(merged[k]);
+          }
+        }
+        dynamicVideos.sort(function(a, b) {
+          return new Date(b.pubDate) - new Date(a.pubDate);
+        });
+        saveCache();
+        if (!dynamicLoaded) { dynamicLoaded = true; }
+        render();
+      }
     });
   });
 }
 
 function refreshDynamicVideos() {
-  dynamicVideos = [];
-  dynamicLoaded = false;
   lastRefreshTime = Date.now();
   document.getElementById("countdownDisplay").classList.remove("loading");
   loadDynamicVideos();
+  fireConfetti();
 }
 
 // ================= RENDER =================
 
 function render() {
-  if (!IS_FILE && !dynamicLoaded) { loadDynamicVideos(); }
+  if (!IS_FILE && !dynamicLoaded) {
+    loadCache();
+    if (!IS_FILE) { loadDynamicVideos(); }
+  }
   if (state.view === "home") renderHome();
   else if (state.view === "categories") renderCategories();
   else if (state.view === "channel") renderChannel(state.channelName);
@@ -272,12 +376,6 @@ function renderHome() {
   for (var c = 0; c < cats.length; c++) {
     var items = getSafeVideos(cats[c], "");
     if (items.length === 0) continue;
-    items.sort(function(a, b) {
-      if (a.pubDate && b.pubDate) return new Date(b.pubDate) - new Date(a.pubDate);
-      if (a.pubDate) return -1;
-      if (b.pubDate) return 1;
-      return 0;
-    });
     html += '<div class="section">';
     html += '<h2 class="section-title"><span class="sec-cat-tag ' + catClass(cats[c]) + '">' + catLabel(cats[c]) + '</span></h2>';
     html += '<div class="video-grid">';
@@ -331,10 +429,8 @@ function renderCategories() {
 }
 
 function renderChannel(chName) {
-  var items = [];
-  for (var i = 0; i < VIDEOS.length; i++) {
-    if (VIDEOS[i].channel === chName) items.push(VIDEOS[i]);
-  }
+  var items = getSafeVideos("all", "");
+  items = items.filter(function(v) { return v.channel === chName; });
   el.view.innerHTML =
     '<div class="channel-header"><div class="channel-avatar" style="background:linear-gradient(135deg,#ff6b6b,#ffa94d)">' +
     '<span style="font-size:2rem;color:#fff;font-weight:800">' + esc(chName.charAt(0)) + '</span></div>' +
@@ -513,6 +609,45 @@ document.getElementById("refreshBtn").addEventListener("click", function() {
   refreshDynamicVideos();
 });
 
+// ================= FUN EFFECTS =================
+
+function fireConfetti() {
+  var colors = ["#ff6b6b","#ffa94d","#ffd43b","#69db7c","#74b9ff","#a29bfe","#fd79a8","#00cec9"];
+  var container = document.body;
+  for (var i = 0; i < 40; i++) {
+    var el = document.createElement("div");
+    el.className = "confetti-piece";
+    el.style.left = Math.random() * 100 + "%";
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.width = (Math.random() * 8 + 4) + "px";
+    el.style.height = (Math.random() * 8 + 4) + "px";
+    el.style.animationDuration = (Math.random() * 2 + 1.5) + "s";
+    el.style.animationDelay = (Math.random() * 0.8) + "s";
+    el.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
+    container.appendChild(el);
+    setTimeout(function(e) { e.remove(); }, 3500, el);
+  }
+}
+
+function addFunEmojis() {
+  var titles = document.querySelectorAll(".section-title");
+  var emojis = ["🌟","✨","🌈","🎈","🎉","🎊","💖","🦄","🐼","🐱","🌸","⭐"];
+  for (var i = 0; i < titles.length; i++) {
+    var e = emojis[i % emojis.length];
+    if (titles[i].querySelector(".fun-emoji")) continue;
+    var span = document.createElement("span");
+    span.className = "fun-emoji";
+    span.textContent = e;
+    titles[i].insertBefore(span, titles[i].firstChild);
+  }
+}
+
+var origRender = render;
+render = function() {
+  origRender();
+  setTimeout(addFunEmojis, 50);
+};
+
 // ================= INIT =================
 if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js"); }
 
@@ -526,6 +661,8 @@ if (IS_FILE) {
   }
 }
 goHome();
+
+// ================= INIT TIMERS =================
 
 setInterval(refreshDynamicVideos, REFRESH_INTERVAL);
 
