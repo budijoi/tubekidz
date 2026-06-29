@@ -102,7 +102,10 @@ var CHANNEL_FEEDS = {
   "Pramod`s Life": { id: "UC1V1PQT_ZVRjzuzioG05rrQ", cat: "petualangan" },
   "Anglikosik Indonesia": { id: "UCiK7L708JFZylemhApNkRcA", cat: "petualangan" },
   "Animal Scripts": { id: "UC5wFTgdXgbecQOm97_S6yfA", cat: "edukasi" },
-  "Dunia Budi Roblox": { id: "UCJ9v-fDARn2Vyl1TX9PfVyA", cat: "gaming" }
+  "Dunia Budi Roblox": { id: "UCJ9v-fDARn2Vyl1TX9PfVyA", cat: "gaming" },
+  "Maizen": { id: "UCJHBJ7F-nAIlMGolm0Hu4vg", cat: "gaming" },
+  "MD Animation": { id: "UCA2p86KD2QIIP0j8b-xkyPw", cat: "kartun" },
+  "Riko The Series": { id: "UCHzkGRP2y-3QJQWzVkHNGgg", cat: "kartun" }
 };
 
 var RSS_URL = "https://api.rss2json.com/v1/api.json?rss_url=";
